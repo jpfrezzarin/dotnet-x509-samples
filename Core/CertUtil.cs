@@ -64,11 +64,16 @@ public static class CertUtil
         req.CertificateExtensions.Add(
             new X509SubjectKeyIdentifierExtension(req.PublicKey, false));
 
+        var serialNumberPrefix = root.GetSerialNumberString()[..8];
+        var serialNumberSuffix = Guid.NewGuid().ToString().Replace("-", string.Empty).ToUpper();
+        var serialNumberStr = serialNumberPrefix + serialNumberSuffix;
+        var serialNumber = serialNumberStr.FromHexStringToByteArray();
+
         using X509Certificate2 cert = req.Create(
             root,
             DateTimeOffset.UtcNow,
             DateTimeOffset.UtcNow.AddDays(360),
-            new byte[] { 1, 2, 3, 4, 5, 6 });
+            serialNumber);
 
         using X509Certificate2 certWithKey = cert.CopyWithPrivateKey(rsa);
         
